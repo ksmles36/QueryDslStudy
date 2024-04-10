@@ -1,2 +1,4 @@
-package com.ksm.querydslstudy;public class Hello {
+package com.ksm.querydslstudy;
+
+public class Hello {
 }
