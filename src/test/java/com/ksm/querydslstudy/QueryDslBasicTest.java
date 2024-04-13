@@ -145,6 +145,19 @@ public class QueryDslBasicTest {
         assertEquals(memberNull.getUsername(), null);
     }
 
+    @Test
+    public void paging1() {
+        //fetchResults() 는 쿼리dsl 5.0 부터 비권장(Deprecated) 됨
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1) //0부터 시작(zero index)
+                .limit(2) //최대 2건 조회
+                .fetch();
+        assertEquals(result.size(), 2);
+    }
+
+
 
 
 }
