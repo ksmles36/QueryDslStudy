@@ -1,8 +1,10 @@
 package com.ksm.querydslstudy;
 
 import com.ksm.querydslstudy.entity.Member;
+import com.ksm.querydslstudy.entity.QMember;
 import com.ksm.querydslstudy.entity.Team;
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -286,6 +288,53 @@ public class QueryDslBasicTest {
     }
 
 
+
+
+
+
+    //나이가 가장 많은 회원 조회
+    @Test
+    public void subQuery() {
+
+        QMember memberSub = new QMember("memberSub");
+
+        Member result = queryFactory
+                .selectFrom(member)
+                .where(member.age.eq(
+                        JPAExpressions
+                                .select(memberSub.age.max())
+                                .from(memberSub)
+                ))
+                .fetchOne();
+
+        assertEquals(result.getAge(), 40);
+
+    }
+
+    //나이가 평균 이상인 회원 조회
+    @Test
+    public void subQueryGoe() {
+
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> memberList = queryFactory
+                .selectFrom(member)
+                .where(member.age.goe(
+                        JPAExpressions
+                                .select(memberSub.age.avg())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+
+        for (Member member : memberList) {
+            System.out.println("member = " + member.getUsername());
+        }
+
+        assertEquals(memberList.get(0).getUsername(), "member3");
+        assertEquals(memberList.get(1).getUsername(), "member4");
+
+    }
 
 
 
