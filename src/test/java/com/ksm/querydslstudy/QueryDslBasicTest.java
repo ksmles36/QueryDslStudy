@@ -4,6 +4,8 @@ import com.ksm.querydslstudy.entity.Member;
 import com.ksm.querydslstudy.entity.QMember;
 import com.ksm.querydslstudy.entity.Team;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -369,6 +371,81 @@ public class QueryDslBasicTest {
 
         for (Tuple tuple : tupleList) {
             System.out.println("tuple = " + tuple);
+        }
+    }
+
+    //case 문 사용
+    @Test
+    public void basicCase() {
+        List<String> fetch = queryFactory
+                .select(member.age.when(10).then("열살")
+                        .when(20).then("스무살")
+                        .otherwise("기타나이"))
+                .from(member)
+                .fetch();
+
+        for (String s : fetch) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    public void complexCase() {
+        List<String> fetch = queryFactory
+                .select(new CaseBuilder()
+                        .when(member.age.between(0, 20)).then("0~20살")
+                        .when(member.age.between(21, 30)).then("21~31살")
+                        .otherwise("기타"))
+                .from(member)
+                .fetch();
+
+        for (String s : fetch) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    //case 문을 활용하여 order by 하기
+    @Test
+    public void orderByCase() {
+        List<Tuple> tupleList = queryFactory
+                .select(member.username, member.age)
+                .from(member)
+                .orderBy(new CaseBuilder()
+                        .when(member.age.between(0, 20)).then(2)
+                        .when(member.age.between(21, 30)).then(1)
+                        .otherwise(3).asc())
+                .fetch();
+
+        for (Tuple tuple : tupleList) {
+            System.out.println("tuple = " + tuple);
+        }
+    }
+
+    //상수 출력해주기
+    @Test
+    public void constant() {
+        List<Tuple> tupleList = queryFactory
+                .select(member.username, Expressions.constant("ABC"))
+                .from(member)
+                .fetch();
+
+        for (Tuple tuple : tupleList) {
+            System.out.println("tuple = " + tuple);
+        }
+    }
+
+    //문자 더하기 concat
+    @Test
+    public void concat() {
+
+        //username_age
+        List<String> fetch = queryFactory
+                .select(member.username.concat("_").concat(member.age.stringValue()))
+                .from(member)
+                .fetch();
+
+        for (String s : fetch) {
+            System.out.println("s = " + s);
         }
     }
 
