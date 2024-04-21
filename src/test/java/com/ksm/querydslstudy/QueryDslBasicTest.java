@@ -4,7 +4,6 @@ import com.ksm.querydslstudy.entity.Member;
 import com.ksm.querydslstudy.entity.QMember;
 import com.ksm.querydslstudy.entity.Team;
 import com.querydsl.core.Tuple;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -19,6 +18,7 @@ import java.util.List;
 
 import static com.ksm.querydslstudy.entity.QMember.member;
 import static com.ksm.querydslstudy.entity.QTeam.team;
+import static com.querydsl.jpa.JPAExpressions.select;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
@@ -296,13 +296,13 @@ public class QueryDslBasicTest {
     @Test
     public void subQuery() {
 
+        //같은 엔티티를 서브쿼리로 조회하는 경우에 별칭이 겹치지 않게 새로 별칭 지정한 Q엔티티클래스를 생성해준다.
         QMember memberSub = new QMember("memberSub");
 
         Member result = queryFactory
                 .selectFrom(member)
                 .where(member.age.eq(
-                        JPAExpressions
-                                .select(memberSub.age.max())
+                        select(memberSub.age.max())
                                 .from(memberSub)
                 ))
                 .fetchOne();
@@ -320,8 +320,7 @@ public class QueryDslBasicTest {
         List<Member> memberList = queryFactory
                 .selectFrom(member)
                 .where(member.age.goe(
-                        JPAExpressions
-                                .select(memberSub.age.avg())
+                        select(memberSub.age.avg())
                                 .from(memberSub)
                 ))
                 .fetch();
@@ -335,6 +334,45 @@ public class QueryDslBasicTest {
         assertEquals(memberList.get(1).getUsername(), "member4");
 
     }
+
+    //서브쿼리 in 절 사용
+    @Test
+    public void subQueryIn() {
+
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> memberList = queryFactory
+                .selectFrom(member)
+                .where(member.age.in(
+                        select(memberSub.age)
+                                .from(memberSub)
+                                .where(memberSub.age.gt(10))
+                ))
+                .fetch();
+
+        memberList.forEach(System.out::println);
+    }
+
+    //select 절에 서브쿼리 사용
+    @Test
+    public void selectSubQuery() {
+
+        QMember memberSub = new QMember("memberSub");
+
+        List<Tuple> tupleList = queryFactory
+                .select(member.username,
+                        (select(memberSub.age.avg())
+                                .from(memberSub)
+                        ))
+                .from(member)
+                .fetch();
+
+        for (Tuple tuple : tupleList) {
+            System.out.println("tuple = " + tuple);
+        }
+    }
+
+
 
 
 
