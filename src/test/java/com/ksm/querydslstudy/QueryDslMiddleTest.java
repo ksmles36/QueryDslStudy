@@ -6,6 +6,7 @@ import com.ksm.querydslstudy.dto.UserDto;
 import com.ksm.querydslstudy.entity.Member;
 import com.ksm.querydslstudy.entity.QMember;
 import com.ksm.querydslstudy.entity.Team;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
@@ -20,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 
 import static com.ksm.querydslstudy.entity.QMember.member;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @Transactional
@@ -175,6 +177,37 @@ public class QueryDslMiddleTest {
         }
     }
 
+    //동적쿼리 - BooleanBuilder, where 다중조건
+    @Test
+    public void dynamicQuery() {
+        String usernameParam = "member1";
+        int ageParam = 10;
+
+        List<Member> result = searchMemberByBooleanBuilder(usernameParam, ageParam);
+
+        assertEquals(result.size(), 1);
+
+        for (Member member1 : result) {
+            System.out.println("member1 = " + member1);
+        }
+    }
+
+    private List<Member> searchMemberByBooleanBuilder(String usernameParam, Integer ageParam) {
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+
+        if (usernameParam != null) {
+            booleanBuilder.and(member.username.eq(usernameParam));
+        }
+
+        if (ageParam != null) {
+            booleanBuilder.and(member.age.eq(ageParam));
+        }
+
+        return queryFactory
+                .selectFrom(member)
+                .where(booleanBuilder)
+                .fetch();
+    }
 
 
 }
