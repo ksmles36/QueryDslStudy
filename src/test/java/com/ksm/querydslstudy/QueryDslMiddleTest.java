@@ -1,6 +1,7 @@
 package com.ksm.querydslstudy;
 
 import com.ksm.querydslstudy.dto.MemberDto;
+import com.ksm.querydslstudy.dto.QMemberDto;
 import com.ksm.querydslstudy.dto.UserDto;
 import com.ksm.querydslstudy.entity.Member;
 import com.ksm.querydslstudy.entity.QMember;
@@ -161,12 +162,18 @@ public class QueryDslMiddleTest {
         }
     }
 
+    //@QueryProjection 사용
+    @Test
+    public void findDtoByQueryProjection() {
+        List<MemberDto> result = queryFactory
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .fetch();
 
-
-
-
-
-
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
 
 
 
