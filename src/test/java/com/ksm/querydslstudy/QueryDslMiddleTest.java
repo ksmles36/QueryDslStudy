@@ -9,6 +9,7 @@ import com.ksm.querydslstudy.entity.Team;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -184,11 +185,17 @@ public class QueryDslMiddleTest {
         int ageParam = 10;
 
         List<Member> result = searchMemberByBooleanBuilder(usernameParam, ageParam);
+        List<Member> result2 = searchMemberByWhereParam(usernameParam, ageParam);
 
         assertEquals(result.size(), 1);
+        assertEquals(result2.size(), 1);
 
         for (Member member1 : result) {
             System.out.println("member1 = " + member1);
+        }
+
+        for (Member member2 : result2) {
+            System.out.println("member2 = " + member2);
         }
     }
 
@@ -207,6 +214,23 @@ public class QueryDslMiddleTest {
                 .selectFrom(member)
                 .where(booleanBuilder)
                 .fetch();
+    }
+
+    private List<Member> searchMemberByWhereParam(String usernameParam, int ageParam) {
+        return queryFactory
+                .selectFrom(member)
+                .where(usernameEq(usernameParam), ageEq(ageParam))
+                .fetch();
+    }
+
+    //where 조건에 null 이 들어가게되면 자동적으로 해당 조건은 무시가 됨을 활용한 방법.
+    //참고로 정수형인 값을 null 체크 하려면 int 가 아닌 Integer wrapper class 형태로 해줘야 한다.
+    private BooleanExpression ageEq(Integer ageParam) {
+        return ageParam != null ? member.age.eq(ageParam) : null;
+    }
+
+    private BooleanExpression usernameEq(String usernameParam) {
+        return usernameParam != null ? member.username.eq(usernameParam) : null;
     }
 
 
