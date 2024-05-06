@@ -21,6 +21,7 @@ import java.util.List;
 import static com.ksm.querydslstudy.entity.QMember.member;
 import static com.ksm.querydslstudy.entity.QTeam.team;
 import static com.querydsl.jpa.JPAExpressions.select;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
@@ -60,7 +61,12 @@ public class QueryDslBasicTest {
                 .setParameter("username", "member1")
                 .getSingleResult();
 
-        assertEquals(findMember.getUsername(), "member1");
+//        assertEquals(findMember.getUsername(), "member1");
+
+        //내가 잘 몰라서 junit jupiter 로 테스트코드 검증 짰는데 실습 때
+        //근데 찾아보니 AssertJ 를 사용하는게 더 나은 것 같다.
+        //import 시에 jupiter 말고 assertJ 를 선택해서 import 받고 static import 처리 해주면 된다!
+        assertThat(findMember.getUsername()).isEqualTo("member1");
     }
 
     @Test
