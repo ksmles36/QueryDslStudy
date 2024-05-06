@@ -233,5 +233,80 @@ public class QueryDslMiddleTest {
         return usernameParam != null ? member.username.eq(usernameParam) : null;
     }
 
+    @Test
+    public void bulkUpdate() {
+        //member1 = 10 -> 비회원
+        //member2 = 20 -> 비회원
+        //member3 = 30 -> 변경없음
+        //member4 = 40 -> 변경없음
+        //으로 되어야 하는데
+
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(25))
+                .execute();
+        //결과리턴으로는 영향받은 행의 수가 리턴된다.
+
+        //영속성 컨텍스트 초기화
+        em.flush();
+        em.clear();
+        //영속성 컨텍스트와 실제 DB 와의 차이 발생을 없애기 위해 영속성 컨텍스트의 내용을 다 내보내고 clear 해줘야 한다.
+        //변경감지로 수정한 게 아니라 벌크 수정 쿼리를 한 것이라 그런듯
+        //위의 두줄을 주석하고 실행해보면 update 쿼리가 실제로 나갔지만 조회 시에 영속성 컨텍스트 우선으로 읽어와버려서 변경된 DB 의
+        // 내용이 무시되버리는 문제가 발생한다.
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        for (Member member1 : result) {
+            System.out.println("member1 = " + member1);
+        }
+    }
+
+    @Test
+    public void bulkAdd() {
+        long count = queryFactory
+                .update(member)
+                .set(member.age, member.age.add(3))
+                .execute();
+        //참고로 add() 와 multiply() 메소드만 있어서 마이너스나 나눗셈 연산은 add(-3), multiply(0.1) 이런식으로 해야 한다.
+
+        //영속성 컨텍스트 초기화
+        em.flush();
+        em.clear();
+
+        List<Member> memberList = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        for (Member member1 : memberList) {
+            System.out.println("member1 = " + member1);
+        }
+    }
+
+    @Test
+    public void bulkDelete() {
+        long count = queryFactory
+                .delete(member)
+                .where(member.age.gt(25))
+                .execute();
+
+        //영속성 컨텍스트 초기화
+        em.flush();
+        em.clear();
+
+        List<Member> memberList = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        for (Member member1 : memberList) {
+            System.out.println("member1 = " + member1);
+        }
+    }
+
+
+
 
 }
