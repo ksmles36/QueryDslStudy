@@ -14,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
-import static com.ksm.querydslstudy.entity.QMember.member;
 import static com.ksm.querydslstudy.entity.QTeam.team;
 
 @SpringBootTest
@@ -80,20 +79,17 @@ public class FetchJoinTestByKsm {
     @Test
     public void fetchJoinByKsm() {
 
-//        List<Team> teamList = teamJpaRepository.findAllByKsm();
+        List<Team> teamList = queryFactory
+                .selectFrom(team)
+                .fetch();
 
 //        List<Team> teamList = queryFactory
 //                .selectFrom(team)
+//                .join(team.members, member).fetchJoin()
 //                .fetch();
 
-        List<Team> teamList = queryFactory
-                .selectFrom(team)
-                .join(team.members, member).fetchJoin()
-//                .join(member).on(member.team.id.eq(team.id)).fetchJoin()
-                .fetch();
-
-        for (Team team1 : teamList) {
-            team1.getMembers().forEach((e) -> System.out.println("여기! = " + e.getUsername()));
+        for (Team t : teamList) {
+            t.getMembers().forEach((e) -> System.out.println("여기! = " + e.getUsername()));
         }
     }
 
